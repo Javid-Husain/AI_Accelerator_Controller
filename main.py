@@ -1,27 +1,19 @@
-from models.accelerator import AcceleratorConfig
-from models.workload import Workload
+from config.parameters import INITIAL_TEMPERATURE
+from models.thermal import ThermalModel
 
 
-workload = Workload(
-    scene_complexity=0.7,
-    sensor_rate=0.5,
-    object_density=0.6,
-    illumination=0.8,
-    deadline=0.020,
+thermal_model = ThermalModel(
+    initial_temperature=INITIAL_TEMPERATURE
 )
 
-config = AcceleratorConfig(
-    frequency_level=3,
-    precision="FP16",
-    sparsity=0.20,
-)
+power = 10.0  # Watts — simulation test value
 
-latency = config.calculate_latency(workload)
-power = config.calculate_power(workload)
-energy = config.calculate_energy(workload)
-accuracy = config.calculate_accuracy(workload)
+print(f"Initial temperature: {thermal_model.get_temperature():.2f} °C")
 
-print(f"Latency : {latency * 1000:.2f} ms")
-print(f"Power   : {power:.2f} W")
-print(f"Energy  : {energy * 1000:.2f} mJ")
-print(f"Accuracy: {accuracy * 100:.2f}%")
+for step in range(10):
+    temperature = thermal_model.update(power)
+
+    print(
+        f"Step {step + 1:02d}: "
+        f"{temperature:.2f} °C"
+    )
