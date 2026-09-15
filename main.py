@@ -8,19 +8,28 @@ from config.parameters import (
 from models.accelerator import AcceleratorConfig
 from models.thermal import ThermalModel
 from models.workload import generate_workload
+from controllers.rule_based import RuleBasedController
 
 
 def main():
     total_steps = int(SIMULATION_TIME / DT)
 
     # --------------------------------------------------------
-    # Fixed accelerator configuration
+    # Initial accelerator configuration
     # --------------------------------------------------------
 
-    accelerator = AcceleratorConfig(
+    initial_config = AcceleratorConfig(
         frequency_level=3,
         precision="FP16",
         sparsity=0.20,
+    )
+
+    # --------------------------------------------------------
+    # Controller
+    # --------------------------------------------------------
+
+    controller = RuleBasedController(
+        initial_config=initial_config
     )
 
     # --------------------------------------------------------
@@ -48,12 +57,23 @@ def main():
             total_steps=total_steps,
         )
 
+        # Controller selects configuration
+        accelerator = controller.select_configuration(
+            workload
+        )
+
+        # Accelerator performance
         latency = accelerator.calculate_latency(workload)
         power = accelerator.calculate_power(workload)
         energy = accelerator.calculate_energy(workload)
         accuracy = accelerator.calculate_accuracy(workload)
 
+        # Thermal dynamics
         temperature = thermal_model.update(power)
+
+        # ----------------------------------------------------
+        # Store telemetry
+        # ----------------------------------------------------
 
         telemetry.append(
             {
@@ -74,34 +94,39 @@ def main():
             }
         )
 
+        # ----------------------------------------------------
+        # Print approximately once per second
+        # ----------------------------------------------------
+
+        if step % 100 == 0:
+            print(
+                f"Time: {step * DT:5.2f} s | "
+                f"Workload: {workload.scene_complexity:.2f} | "
+                f"Deadline: {workload.deadline * 1000:5.2f} ms | "
+                f"Freq: {accelerator.frequency_level} | "
+                f"Precision: {accelerator.precision:>4} | "
+                f"Sparsity: {accelerator.sparsity:.2f} | "
+                f"Latency: {latency * 1000:6.2f} ms | "
+                f"Power: {power:5.2f} W | "
+                f"Temp: {temperature:6.2f} °C"
+            )
+
     # --------------------------------------------------------
-    # Convert telemetry to DataFrame
+    # Save controller results
     # --------------------------------------------------------
 
     telemetry_df = pd.DataFrame(telemetry)
 
-    # --------------------------------------------------------
-    # Save simulation results
-    # --------------------------------------------------------
-
-    output_path = "results/open_loop_baseline.csv"
+    output_path = "results/rule_based_controller.csv"
 
     telemetry_df.to_csv(
         output_path,
         index=False,
     )
 
-    # --------------------------------------------------------
-    # Display summary
-    # --------------------------------------------------------
-
     print("\nSimulation completed successfully.")
-    print(f"Total simulation steps: {total_steps}")
     print(f"Telemetry records: {len(telemetry_df)}")
     print(f"Results saved to: {output_path}")
-
-    print("\nFirst 5 telemetry records:")
-    print(telemetry_df.head())
 
 
 if __name__ == "__main__":
