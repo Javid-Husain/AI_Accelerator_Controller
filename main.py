@@ -1,3 +1,5 @@
+import pandas as pd
+
 from config.parameters import (
     INITIAL_TEMPERATURE,
     SIMULATION_TIME,
@@ -30,6 +32,12 @@ def main():
     )
 
     # --------------------------------------------------------
+    # Telemetry storage
+    # --------------------------------------------------------
+
+    telemetry = []
+
+    # --------------------------------------------------------
     # Simulation loop
     # --------------------------------------------------------
 
@@ -47,17 +55,53 @@ def main():
 
         temperature = thermal_model.update(power)
 
-        # Print every 100 steps (approximately once per second)
-        if step % 100 == 0:
-            print(
-                f"Time: {step * DT:5.2f} s | "
-                f"Workload: {workload.scene_complexity:.2f} | "
-                f"Latency: {latency * 1000:6.2f} ms | "
-                f"Power: {power:5.2f} W | "
-                f"Energy: {energy * 1000:6.2f} mJ | "
-                f"Accuracy: {accuracy * 100:6.2f}% | "
-                f"Temp: {temperature:6.2f} °C"
-            )
+        telemetry.append(
+            {
+                "time": step * DT,
+                "workload": workload.scene_complexity,
+                "sensor_rate": workload.sensor_rate,
+                "object_density": workload.object_density,
+                "illumination": workload.illumination,
+                "deadline": workload.deadline,
+                "frequency_level": accelerator.frequency_level,
+                "precision": accelerator.precision,
+                "sparsity": accelerator.sparsity,
+                "latency": latency,
+                "power": power,
+                "energy": energy,
+                "accuracy": accuracy,
+                "temperature": temperature,
+            }
+        )
+
+    # --------------------------------------------------------
+    # Convert telemetry to DataFrame
+    # --------------------------------------------------------
+
+    telemetry_df = pd.DataFrame(telemetry)
+
+    # --------------------------------------------------------
+    # Save simulation results
+    # --------------------------------------------------------
+
+    output_path = "results/open_loop_baseline.csv"
+
+    telemetry_df.to_csv(
+        output_path,
+        index=False,
+    )
+
+    # --------------------------------------------------------
+    # Display summary
+    # --------------------------------------------------------
+
+    print("\nSimulation completed successfully.")
+    print(f"Total simulation steps: {total_steps}")
+    print(f"Telemetry records: {len(telemetry_df)}")
+    print(f"Results saved to: {output_path}")
+
+    print("\nFirst 5 telemetry records:")
+    print(telemetry_df.head())
 
 
 if __name__ == "__main__":
