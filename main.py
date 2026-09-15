@@ -19,7 +19,9 @@ config = AcceleratorConfig(
 latency = config.calculate_latency(workload)
 power = config.calculate_power(workload)
 energy = config.calculate_energy(workload)
+accuracy = config.calculate_accuracy(workload)
 
 print(f"Latency : {latency * 1000:.2f} ms")
 print(f"Power   : {power:.2f} W")
 print(f"Energy  : {energy * 1000:.2f} mJ")
+print(f"Accuracy: {accuracy * 100:.2f}%")

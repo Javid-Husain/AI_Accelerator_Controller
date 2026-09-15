@@ -110,7 +110,6 @@ class AcceleratorConfig:
             * (1.0 - self.sparsity)
         )
 
-        # Dynamic power approximately increases with frequency.
         frequency_power_factor = frequency ** 3
 
         power = (
@@ -134,3 +133,33 @@ class AcceleratorConfig:
         energy = power * latency
 
         return energy
+
+    def calculate_accuracy(self, workload: Workload) -> float:
+        """
+        Estimate prediction accuracy.
+
+        Accuracy primarily depends on:
+            - precision
+            - sparsity
+
+        Frequency does not directly affect accuracy.
+
+        The model is a simulation assumption and should
+        eventually be replaced or calibrated using
+        measured model accuracy.
+        """
+
+        base_accuracy = PRECISION_MODES[self.precision]["accuracy"]
+
+        # Accuracy penalty due to sparsity.
+        #
+        # This is intentionally conservative: higher sparsity
+        # causes a larger degradation in prediction accuracy.
+        sparsity_penalty = 0.05 * self.sparsity
+
+        accuracy = base_accuracy - sparsity_penalty
+
+        # Keep accuracy within a physically meaningful range.
+        accuracy = max(0.0, min(1.0, accuracy))
+
+        return accuracy
