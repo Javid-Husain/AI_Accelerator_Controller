@@ -1,12 +1,15 @@
-from models.workload import Workload
+from models.workload import generate_workload
 
 
-workload = Workload(
-    scene_complexity=0.7,
-    sensor_rate=0.5,
-    object_density=0.6,
-    illumination=0.8,
-    deadline=0.020
-)
+total_steps = 20
 
-print(workload)
+for step in range(total_steps):
+    workload = generate_workload(step, total_steps)
+
+    print(
+        f"Step {step:02d} | "
+        f"Complexity={workload.scene_complexity:.1f} | "
+        f"Sensor Rate={workload.sensor_rate:.1f} | "
+        f"Objects={workload.object_density:.1f} | "
+        f"Deadline={workload.deadline * 1000:.0f} ms"
+    )

@@ -35,3 +35,37 @@ class Workload:
             raise ValueError(
                 f"deadline must be greater than 0, got {self.deadline}"
             )
+
+
+def generate_workload(step: int, total_steps: int) -> Workload:
+    """
+    Generate a deterministic workload that changes over time.
+
+    The workload progresses through:
+        low -> medium -> high -> medium -> low
+
+    This gives us a simple dynamic scenario for testing
+    the controller's response to changing workload conditions.
+    """
+
+    if total_steps <= 0:
+        raise ValueError("total_steps must be greater than 0")
+
+    progress = step / (total_steps - 1) if total_steps > 1 else 0.0
+
+    if progress < 0.25:
+        workload_level = 0.2
+    elif progress < 0.50:
+        workload_level = 0.5
+    elif progress < 0.75:
+        workload_level = 0.9
+    else:
+        workload_level = 0.4
+
+    return Workload(
+        scene_complexity=workload_level,
+        sensor_rate=workload_level,
+        object_density=workload_level,
+        illumination=0.7,
+        deadline=0.020,
+    )
