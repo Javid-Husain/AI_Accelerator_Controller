@@ -1,7 +1,6 @@
 import pandas as pd
 
 from config.parameters import (
-    MAX_LATENCY,
     MIN_ACCURACY,
     MAX_TEMPERATURE,
     MAX_POWER,
@@ -15,13 +14,28 @@ def main():
     data = pd.read_csv(INPUT_FILE)
 
     # --------------------------------------------------------
-    # Constraint checks
+    # Dynamic latency constraint
     # --------------------------------------------------------
 
-    data["latency_violation"] = data["latency"] > MAX_LATENCY
-    data["accuracy_violation"] = data["accuracy"] < MIN_ACCURACY
-    data["temperature_violation"] = data["temperature"] > MAX_TEMPERATURE
-    data["power_violation"] = data["power"] > MAX_POWER
+    data["latency_violation"] = (
+        data["latency"] > data["deadline"]
+    )
+
+    # --------------------------------------------------------
+    # Other safety constraints
+    # --------------------------------------------------------
+
+    data["accuracy_violation"] = (
+        data["accuracy"] < MIN_ACCURACY
+    )
+
+    data["temperature_violation"] = (
+        data["temperature"] > MAX_TEMPERATURE
+    )
+
+    data["power_violation"] = (
+        data["power"] > MAX_POWER
+    )
 
     data["any_violation"] = (
         data["latency_violation"]
@@ -64,7 +78,7 @@ def main():
     print(f"Maximum power      : {max_power:.2f} W")
 
     print("\nConstraint limits:")
-    print(f"Maximum latency    : {MAX_LATENCY * 1000:.2f} ms")
+    print("Latency            : workload-dependent deadline")
     print(f"Minimum accuracy   : {MIN_ACCURACY * 100:.2f}%")
     print(f"Maximum temperature: {MAX_TEMPERATURE:.2f} °C")
     print(f"Maximum power      : {MAX_POWER:.2f} W")

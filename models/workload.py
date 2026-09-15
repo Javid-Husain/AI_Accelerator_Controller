@@ -41,11 +41,14 @@ def generate_workload(step: int, total_steps: int) -> Workload:
     """
     Generate a deterministic workload that changes over time.
 
-    The workload progresses through:
-        low -> medium -> high -> medium -> low
+    Workload progression:
+        low -> medium -> high -> medium
 
-    This gives us a simple dynamic scenario for testing
-    the controller's response to changing workload conditions.
+    During the high-workload period, the deadline becomes
+    more demanding to represent a navigation-critical
+    perception task.
+
+    The scenario is a simulation assumption.
     """
 
     if total_steps <= 0:
@@ -55,17 +58,24 @@ def generate_workload(step: int, total_steps: int) -> Workload:
 
     if progress < 0.25:
         workload_level = 0.2
+        deadline = 0.020
+
     elif progress < 0.50:
         workload_level = 0.5
+        deadline = 0.020
+
     elif progress < 0.75:
         workload_level = 0.9
+        deadline = 0.003
+
     else:
         workload_level = 0.4
+        deadline = 0.020
 
     return Workload(
         scene_complexity=workload_level,
         sensor_rate=workload_level,
         object_density=workload_level,
         illumination=0.7,
-        deadline=0.020,
+        deadline=deadline,
     )
