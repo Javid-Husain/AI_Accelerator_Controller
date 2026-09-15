@@ -1,0 +1,37 @@
+from dataclasses import dataclass
+
+
+@dataclass
+class Workload:
+    """
+    Represents the workload and environmental conditions
+    observed by the accelerator controller.
+
+    Normalized workload variables must be in [0, 1].
+    Deadline is specified in seconds.
+    """
+
+    scene_complexity: float
+    sensor_rate: float
+    object_density: float
+    illumination: float
+    deadline: float
+
+    def __post_init__(self):
+        normalized_values = {
+            "scene_complexity": self.scene_complexity,
+            "sensor_rate": self.sensor_rate,
+            "object_density": self.object_density,
+            "illumination": self.illumination,
+        }
+
+        for name, value in normalized_values.items():
+            if not 0.0 <= value <= 1.0:
+                raise ValueError(
+                    f"{name} must be between 0 and 1, got {value}"
+                )
+
+        if self.deadline <= 0:
+            raise ValueError(
+                f"deadline must be greater than 0, got {self.deadline}"
+            )
