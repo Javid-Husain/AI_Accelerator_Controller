@@ -7,20 +7,19 @@ workload = Workload(
     sensor_rate=0.5,
     object_density=0.6,
     illumination=0.8,
-    deadline=0.020
+    deadline=0.020,
 )
 
+config = AcceleratorConfig(
+    frequency_level=3,
+    precision="FP16",
+    sparsity=0.20,
+)
 
-for frequency_level in range(4):
-    config = AcceleratorConfig(
-        frequency_level=frequency_level,
-        precision="FP16",
-        sparsity=0.20
-    )
+latency = config.calculate_latency(workload)
+power = config.calculate_power(workload)
+energy = config.calculate_energy(workload)
 
-    latency = config.calculate_latency(workload)
-
-    print(
-        f"Frequency level {frequency_level}: "
-        f"{latency * 1000:.2f} ms"
-    )
+print(f"Latency : {latency * 1000:.2f} ms")
+print(f"Power   : {power:.2f} W")
+print(f"Energy  : {energy * 1000:.2f} mJ")
